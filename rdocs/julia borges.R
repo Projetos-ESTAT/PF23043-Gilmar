@@ -44,59 +44,55 @@ pacman::p_load(cluster,mclust,andrews,graphics,foreign,gplots,heatmap.plus,proxy
 pacman::p_load(tidyverse,MASS,klaR,ggplot2,knitr,cowplot,Rchoice,AICcmodavg,questionr,mdscore,nlme)
 
 banco <- read_excel('gilmar.xlsx')
-summary(dados)
+summary(banco)
 
-#### (1) Salmao - J&W - Exemplo 11.8 ####
+dados1 <- subset(banco, Manejo %in% c('Selvagem - AM', 'Selvagem - TO', 'Cultivado - TO'))
+dados2 <- subset(banco, Manejo == 'Desconhecido')
 
-salmon <- read.table("C:/001-dados/cursos/Salmao-T11-2.dat",
-                     header = F)
-colnames(salmon) <- c("Origin", "Gender", "Freshwater", "Marine")
-head(salmon)
-dim(salmon)
+###### FUNÇÃO DISCRIMINANTE LINEAR ######
 
-salmon$Origin <- factor(salmon$Origin, level=c(1,2),
-                        labels=c("Alaskan","Canadian"))
-salmon$Gender <- factor(salmon$Gender, level=c(1,2),
-                        labels=c("Female","Male"))
-head(salmon)
-table(salmon$Origin,salmon$Gender)
+attach(banco)
+attach(dados1)
 
+(slda <- lda(Manejo ~ `Cr mg/kg`+	`Mn mg/kg` +	`Fe mg/kg` +	`Co mg/kg`+	`Cu mg/kg`+	`ZN mg/kg`+	`Sr mg/kg`+	`Mo mg/kg`+`Cs µg/kg`+	`Ba mg/kg`+	`Hg mg/kg`+	`d 13C`+	`d 15N`, 
+             data=dados1, na.action = "na.omit"))
+print(slda)
 
+' as matrizes de covariância da população 1 e da população 2 são iguais '
 
-(slda <- lda(Origin ~ Freshwater + Marine, 
-             data=salmon, na.action = "na.omit"))
+###### FUNÇÃO DISCRIMINANTE QUADRÁTICA ######
 
-(salmonp <- predict(slda))
-(ctable <- table(salmon$Origin, salmonp$class))
-(diag(prop.table(ctable,1))) # prop de classif. correta no grupo
-(sum(diag(prop.table(ctable)))) # prop total de classf. correta 
-
-plot(salmon$Freshwater,salmon$Marine,
-     col = salmon$Origin, pch=20, cex=1.5,
-     xlim = c(0,250), ylim = c(300,550),
-     main = "Salmon Data",
-     xlab = "Freshwater diameter",
-     ylab = "Marine diameter")
-
-salmon.new <- data.frame(cbind(rep(0:250,each=200),
-                               rep(300:550,200)))
-colnames(salmon.new) <- c("Freshwater","Marine")
-head(salmon.new)
-
-psalmon.new <- predict(object=slda,newdata=as.list(salmon.new))
-
-salmon.new <- cbind(salmon.new,psalmon.new$class)
-head(salmon.new)
-
-plot(salmon.new$Freshwater,salmon.new$Marine,
-     col = psalmon.new$class, pch=20, cex=1.5,
-     xlim = c(0,200), ylim = c(300,500),
-     main = "Salmon Data",
-     xlab = "Freshwater diameter",
-     ylab = "Marine diameter")
-
-plot(slda, dimen = 1)
-
-partimat(Origin ~ Marine + Freshwater, data=salmon, method="lda")
-
-
+# (salmonp <- predict(slda))
+# (ctable <- table(salmon$Origin, salmonp$class))
+# (diag(prop.table(ctable,1))) # prop de classif. correta no grupo
+# (sum(diag(prop.table(ctable)))) # prop total de classf. correta 
+# 
+# plot(salmon$Freshwater,salmon$Marine,
+#      col = salmon$Origin, pch=20, cex=1.5,
+#      xlim = c(0,250), ylim = c(300,550),
+#      main = "Salmon Data",
+#      xlab = "Freshwater diameter",
+#      ylab = "Marine diameter")
+# 
+# salmon.new <- data.frame(cbind(rep(0:250,each=200),
+#                                rep(300:550,200)))
+# colnames(salmon.new) <- c("Freshwater","Marine")
+# head(salmon.new)
+# 
+# psalmon.new <- predict(object=slda,newdata=as.list(salmon.new))
+# 
+# salmon.new <- cbind(salmon.new,psalmon.new$class)
+# head(salmon.new)
+# 
+# plot(salmon.new$Freshwater,salmon.new$Marine,
+#      col = psalmon.new$class, pch=20, cex=1.5,
+#      xlim = c(0,200), ylim = c(300,500),
+#      main = "Salmon Data",
+#      xlab = "Freshwater diameter",
+#      ylab = "Marine diameter")
+# 
+# plot(slda, dimen = 1)
+# 
+# partimat(Origin ~ Marine + Freshwater, data=salmon, method="lda")
+# 
+# 
